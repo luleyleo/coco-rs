@@ -232,6 +232,17 @@ impl Problem {
     pub fn evaluations_constraints(&self) -> u64 {
         unsafe { coco_sys::coco_problem_get_evaluations_constraints(self.inner) }
     }
+
+    /// Writes a feasible initial solution into `x`.
+    ///
+    /// If the problem does not provide a specific solution,
+    /// it will be the center of the problem's region of interest.
+    pub fn initial_solution(&self, x: &mut [f64]) {
+        assert_eq!(self.dimension(), x.len());
+        unsafe {
+            coco_sys::coco_problem_get_initial_solution(self.inner, x.as_mut_ptr());
+        }
+    }
 }
 
 impl Drop for Problem {
