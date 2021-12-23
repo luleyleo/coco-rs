@@ -225,10 +225,12 @@ impl Problem {
         }
     }
 
+    /// Returns how often this instance has been evaluated.
     pub fn evaluations(&self) -> u64 {
         unsafe { coco_sys::coco_problem_get_evaluations(self.inner) }
     }
 
+    /// Returns how often this instances constrants have been evaluated.
     pub fn evaluations_constraints(&self) -> u64 {
         unsafe { coco_sys::coco_problem_get_evaluations_constraints(self.inner) }
     }
