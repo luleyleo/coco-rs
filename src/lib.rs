@@ -5,13 +5,59 @@ use std::{
     ptr,
 };
 
+/// A COCO suite
 pub struct Suite {
     inner: *mut coco_suite_t,
 }
 
+pub enum SuiteName {
+    Bbob,
+    BbobBiobj,
+    BbobBiobjExt,
+    BbobLargescale,
+    BbobConstrained,
+    BbobMixint,
+    BbobBiobjMixint,
+    Toy,
+}
+impl SuiteName {
+    pub fn as_str(&self) -> &'static str {
+        match self {
+            SuiteName::Bbob => "bbob",
+            SuiteName::BbobBiobj => "bbob-biobj",
+            SuiteName::BbobBiobjExt => "bbob-biobj-ext",
+            SuiteName::BbobLargescale => "bbob-largescale",
+            SuiteName::BbobConstrained => "bbob-constrained",
+            SuiteName::BbobMixint => "bbob-mixint",
+            SuiteName::BbobBiobjMixint => "bbob-biobj-mixint",
+            SuiteName::Toy => "toy",
+        }
+    }
+}
+
 impl Suite {
-    pub fn new(name: &str, instance: &str, options: &str) -> Option<Suite> {
-        let name = CString::new(name).unwrap();
+    /// Instantiates the specified COCO suite.
+    ///
+    /// # suite_instance
+    /// A string used for defining the suite instances. Two ways are supported:
+    /// - "year: YEAR", where YEAR is the year of the BBOB workshop, includes the instances (to be) used in that
+    /// year's workshop;
+    /// - "instances: VALUES", where VALUES are instance numbers from 1 on written as a comma-separated list or a
+    /// range m-n.
+    ///
+    /// # suite_options
+    /// A string of pairs "key: value" used to filter the suite (especially useful for
+    /// parallelizing the experiments). Supported options:
+    /// - "dimensions: LIST", where LIST is the list of dimensions to keep in the suite (range-style syntax is
+    /// not allowed here),
+    /// - "dimension_indices: VALUES", where VALUES is a list or a range of dimension indices (starting from 1) to keep
+    /// in the suite, and
+    /// - "function_indices: VALUES", where VALUES is a list or a range of function indices (starting from 1) to keep
+    /// in the suite, and
+    /// - "instance_indices: VALUES", where VALUES is a list or a range of instance indices (starting from 1) to keep
+    /// in the suite.
+    pub fn new(name: SuiteName, instance: &str, options: &str) -> Option<Suite> {
+        let name = CString::new(name.as_str()).unwrap();
         let instance = CString::new(instance).unwrap();
         let options = CString::new(options).unwrap();
 
@@ -25,7 +71,8 @@ impl Suite {
         }
     }
 
-    pub fn next_propblem(&mut self, observer: Option<&mut Observer>) -> Option<Problem> {
+    /// Returns the next problem or `None` when the suite completed.
+    pub fn next_problem(&mut self, observer: Option<&mut Observer>) -> Option<Problem> {
         let observer = observer.map(|o| o.inner).unwrap_or(ptr::null_mut());
         let inner = unsafe { coco_sys::coco_suite_get_next_problem(self.inner, observer) };
 
@@ -36,6 +83,7 @@ impl Suite {
         }
     }
 
+    /// Returns the total number of problems in the suite.
     pub fn number_of_problems(&mut self) -> usize {
         unsafe {
             coco_sys::coco_suite_get_number_of_problems(self.inner)
@@ -53,11 +101,18 @@ impl Drop for Suite {
     }
 }
 
+/// A specific problem instance.
+///
+/// Instances can be optained using [Suite::next_problem].
 pub struct Problem {
     inner: *mut coco_problem_t,
 }
 
 impl Problem {
+    /// Evaluates the problem at `x` and returns the result in `y`.
+    ///
+    /// The length of `x` must match [Problem::dimension] and the
+    /// length of `y` must match [Problem::number_of_objectives].
     pub fn evaluate_function(&mut self, x: &[f64], y: &mut [f64]) {
         assert_eq!(self.dimension(), x.len());
         assert_eq!(self.number_of_objectives(), y.len());
@@ -67,10 +122,12 @@ impl Problem {
         }
     }
 
+    /// Returns true if a previous evaluation hit the target value.
     pub fn final_target_hit(&self) -> bool {
         unsafe { coco_sys::coco_problem_final_target_hit(self.inner) == 1 }
     }
 
+    /// Returns the dimension of the problem.
     pub fn dimension(&self) -> usize {
         unsafe {
             coco_sys::coco_problem_get_dimension(self.inner)
@@ -79,6 +136,7 @@ impl Problem {
         }
     }
 
+    /// Returns the number of objectives of the problem.
     pub fn number_of_objectives(&self) -> usize {
         unsafe {
             coco_sys::coco_problem_get_number_of_objectives(self.inner)
@@ -87,6 +145,7 @@ impl Problem {
         }
     }
 
+    /// Returns the upper and lover bounds of the problem.
     pub fn get_ranges_of_interest(&self) -> Vec<RangeInclusive<f64>> {
         let dimension = self.dimension() as isize;
         unsafe {
@@ -111,13 +170,66 @@ impl Drop for Problem {
     }
 }
 
+/// An observer to log results in COCO's data format.
+///
+/// Can be provided to [Suite::next_problem] and it will
+/// automatically be attached to the returned problem.
 pub struct Observer {
     inner: *mut coco_observer_t,
 }
 
+pub enum ObserverName {
+    Bbob,
+    BbobBiobj,
+    Toy,
+    None,
+}
+impl ObserverName {
+    fn as_str(&self) -> &'static str {
+        match self {
+            ObserverName::Bbob => "bbob",
+            ObserverName::BbobBiobj => "bbob-biobj",
+            ObserverName::Toy => "toy",
+            ObserverName::None => "no-observer",
+        }
+    }
+}
+
 impl Observer {
-    pub fn new(name: &str, options: &str) -> Option<Observer> {
-        let name = CString::new(name).unwrap();
+    /// Creates a new observer.
+    ///
+    /// # observer_options
+    /// A string of pairs "key: value" used to pass the options to the observer. Some
+    /// observer options are general, while others are specific to some observers. Here we list only the general
+    /// options, see observer_bbob, observer_biobj and observer_toy for options of the specific observers.
+    /// - "result_folder: NAME" determines the folder within the "exdata" folder into which the results will be
+    /// output. If the folder with the given name already exists, first NAME_001 will be tried, then NAME_002 and
+    /// so on. The default value is "default".
+    /// - "algorithm_name: NAME", where NAME is a short name of the algorithm that will be used in plots (no
+    /// spaces are allowed). The default value is "ALG".
+    /// - "algorithm_info: STRING" stores the description of the algorithm. If it contains spaces, it must be
+    /// surrounded by double quotes. The default value is "" (no description).
+    /// - "number_target_triggers: VALUE" defines the number of targets between each 10^i and 10^(i+1)
+    /// (equally spaced in the logarithmic scale) that trigger logging. The default value is 100.
+    /// - "target_precision: VALUE" defines the precision used for targets (there are no targets for
+    /// abs(values) < target_precision). The default value is 1e-8.
+    /// - "number_evaluation_triggers: VALUE" defines the number of evaluations to be logged between each 10^i
+    /// and 10^(i+1). The default value is 20.
+    /// - "base_evaluation_triggers: VALUES" defines the base evaluations used to produce an additional
+    /// evaluation-based logging. The numbers of evaluations that trigger logging are every
+    /// base_evaluation * dimension * (10^i). For example, if base_evaluation_triggers = "1,2,5", the logger will
+    /// be triggered by evaluations dim*1, dim*2, dim*5, 10*dim*1, 10*dim*2, 10*dim*5, 100*dim*1, 100*dim*2,
+    /// 100*dim*5, ... The default value is "1,2,5".
+    /// - "precision_x: VALUE" defines the precision used when outputting variables and corresponds to the number
+    /// of digits to be printed after the decimal point. The default value is 8.
+    /// - "precision_f: VALUE" defines the precision used when outputting f values and corresponds to the number of
+    /// digits to be printed after the decimal point. The default value is 15.
+    /// - "precision_g: VALUE" defines the precision used when outputting constraints and corresponds to the number
+    /// of digits to be printed after the decimal point. The default value is 3.
+    /// - "log_discrete_as_int: VALUE" determines whether the values of integer variables (in mixed-integer problems)
+    /// are logged as integers (1) or not (0 - in this case they are logged as doubles). The default value is 0.
+    pub fn new(name: ObserverName, options: &str) -> Option<Observer> {
+        let name = CString::new(name.as_str()).unwrap();
         let options = CString::new(options).unwrap();
 
         let inner = unsafe { coco_sys::coco_observer(name.as_ptr(), options.as_ptr()) };
@@ -129,6 +241,7 @@ impl Observer {
         }
     }
 
+    /// Prints where the result is written to.
     pub fn result_folder(&self) -> &str {
         unsafe {
             CStr::from_ptr(coco_sys::coco_observer_get_result_folder(self.inner))
