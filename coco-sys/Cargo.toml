@@ -1,0 +1,9 @@
+[package]
+name = "coco-sys"
+version = "0.1.0"
+edition = "2021"
+links = "coco"
+
+[build-dependencies]
+bindgen = "0.59.2"
+cc = "1.0"

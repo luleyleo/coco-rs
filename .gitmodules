@@ -1,0 +1,3 @@
+[submodule "coco-sys/vendor/coco"]
+	path = coco-sys/vendor/coco
+	url = https://github.com/numbbo/coco
