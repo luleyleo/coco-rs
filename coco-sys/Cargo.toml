@@ -7,6 +7,7 @@ description = "Generated Rust bindings for COCO benchmarking framework"
 repository = "https://github/luleyleo/coco-rs"
 keywords = ["coco", "benchmark", "blackbox", "bindings"]
 categories = ["science"]
+exclude = ["vendor/coco"]
 edition = "2021"
 links = "coco"
 
