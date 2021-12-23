@@ -38,6 +38,7 @@ pub fn set_log_level(level: LogLevel) {
 /// A COCO suite
 pub struct Suite {
     inner: *mut coco_suite_t,
+    current_problem: Option<Problem>,
 }
 
 pub enum SuiteName {
@@ -97,19 +98,29 @@ impl Suite {
         if inner.is_null() {
             None
         } else {
-            Some(Suite { inner })
+            Some(Suite {
+                current_problem: None,
+                inner,
+            })
         }
     }
 
     /// Returns the next problem or `None` when the suite completed.
-    pub fn next_problem(&mut self, observer: Option<&mut Observer>) -> Option<Problem> {
+    pub fn next_problem(&mut self, observer: Option<&mut Observer>) -> Option<&mut Problem> {
         let observer = observer.map(|o| o.inner).unwrap_or(ptr::null_mut());
         let inner = unsafe { coco_sys::coco_suite_get_next_problem(self.inner, observer) };
+
+        if let Some(problem) = self.current_problem.take() {
+            // The problems returned by this function are already
+            // managed by COCO, so we must not destruct them ourselves.
+            std::mem::forget(problem);
+        }
 
         if inner.is_null() {
             None
         } else {
-            Some(Problem { inner })
+            self.current_problem = Some(Problem { inner });
+            self.current_problem.as_mut()
         }
     }
 
