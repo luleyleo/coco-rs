@@ -152,6 +152,19 @@ impl Problem {
         }
     }
 
+    /// Evaluates the problem constraints in point x and save the result in y.
+    ///
+    /// The length of `x` must match [Problem::dimension] and the
+    /// length of `y` must match [Problem::number_of_constraints].
+    pub fn evaluate_constraint(&mut self, x: &[f64], y: &mut [f64]) {
+        assert_eq!(self.dimension(), x.len());
+        assert_eq!(self.number_of_constraints(), y.len());
+
+        unsafe {
+            coco_sys::coco_evaluate_constraint(self.inner, x.as_ptr(), y.as_mut_ptr());
+        }
+    }
+
     /// Returns true if a previous evaluation hit the target value.
     pub fn final_target_hit(&self) -> bool {
         unsafe { coco_sys::coco_problem_final_target_hit(self.inner) == 1 }
@@ -175,6 +188,15 @@ impl Problem {
         }
     }
 
+    /// Returns the number of constraints of the problem.
+    pub fn number_of_constraints(&self) -> usize {
+        unsafe {
+            coco_sys::coco_problem_get_number_of_constraints(self.inner)
+                .try_into()
+                .unwrap()
+        }
+    }
+
     /// Returns the upper and lover bounds of the problem.
     pub fn get_ranges_of_interest(&self) -> Vec<RangeInclusive<f64>> {
         let dimension = self.dimension() as isize;
@@ -189,6 +211,14 @@ impl Problem {
 
             ranges
         }
+    }
+
+    pub fn evaluations(&self) -> u64 {
+        unsafe { coco_sys::coco_problem_get_evaluations(self.inner) }
+    }
+
+    pub fn evaluations_constraints(&self) -> u64 {
+        unsafe { coco_sys::coco_problem_get_evaluations_constraints(self.inner) }
     }
 }
 
