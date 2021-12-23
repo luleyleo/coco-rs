@@ -12,5 +12,6 @@ edition = "2021"
 [workspace]
 members = ["coco-sys"]
 
-[dependencies]
-coco-sys = { path="./coco-sys" }
+[dependencies.coco-sys]
+version = "0.1"
+path="./coco-sys"
