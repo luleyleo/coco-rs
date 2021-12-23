@@ -197,6 +197,18 @@ impl Problem {
         }
     }
 
+    /// Returns the numver of integer variables of the problem.
+    ///
+    /// The first `n` variables will be integers then.
+    /// Returns `0` if all variables are continuous.
+    pub fn number_of_integer_variables(&self) -> usize {
+        unsafe {
+            coco_sys::coco_problem_get_number_of_integer_variables(self.inner)
+                .try_into()
+                .unwrap()
+        }
+    }
+
     /// Returns the upper and lover bounds of the problem.
     pub fn get_ranges_of_interest(&self) -> Vec<RangeInclusive<f64>> {
         let dimension = self.dimension() as isize;
