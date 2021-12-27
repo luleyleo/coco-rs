@@ -146,6 +146,13 @@ pub struct Problem {
 unsafe impl Send for Problem {}
 
 impl Problem {
+    /// Returns the ID of the problem.
+    ///
+    /// For the `toy` suite this is
+    /// - `{function-name}_d{dimension}`
+    ///
+    /// For `bbob` it is
+    /// - bbob_f{function-index}_i{instance}_d{dimension}
     pub fn id(&self) -> &str {
         unsafe {
             CStr::from_ptr(coco_sys::coco_problem_get_id(self.inner))
