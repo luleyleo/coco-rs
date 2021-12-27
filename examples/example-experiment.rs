@@ -1,4 +1,4 @@
-use coco::{LogLevel, Observer, ObserverName, Problem, RandomState, Suite, SuiteName};
+use coco_rs::{LogLevel, Observer, ObserverName, Problem, RandomState, Suite, SuiteName};
 
 const BUDGET_MULTIPLIER: usize = 10;
 const INDEPENDENT_RESTARTS: u64 = 1e5 as u64;
@@ -8,7 +8,7 @@ fn main() {
     let random_generator = &mut RandomState::new(RANDOM_SEED);
     println!("Running the example experiment... (might take time, be patient)");
 
-    coco::set_log_level(LogLevel::Info);
+    coco_rs::set_log_level(LogLevel::Info);
 
     example_experiment(
         SuiteName::Bbob,
