@@ -119,7 +119,7 @@ impl Suite {
     }
 
     /// Returns the total number of problems in the suite.
-    pub fn number_of_problems(&mut self) -> usize {
+    pub fn number_of_problems(&self) -> usize {
         unsafe {
             coco_sys::coco_suite_get_number_of_problems(self.inner)
                 .try_into()
