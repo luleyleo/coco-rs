@@ -109,13 +109,35 @@ impl Suite {
         let inner = unsafe { coco_sys::coco_suite_get_next_problem(self.inner, observer) };
 
         if inner.is_null() {
-            None
-        } else {
-            unsafe {
-                coco_sys::coco_suite_forget_current_problem(self.inner);
-            }
-            Some(Problem { inner })
+            return None;
         }
+
+        unsafe {
+            coco_sys::coco_suite_forget_current_problem(self.inner);
+        }
+
+        let mut function = 0;
+        let mut dimension = 0;
+        let mut instance = 0;
+
+        unsafe {
+            let suite_index = coco_sys::coco_problem_get_suite_dep_index(inner);
+
+            coco_sys::coco_suite_decode_problem_index(
+                self.inner,
+                suite_index,
+                &mut function,
+                &mut dimension,
+                &mut instance,
+            );
+        }
+
+        Some(Problem {
+            inner,
+            function: function as usize,
+            dimension: dimension as usize,
+            instance: instance as usize,
+        })
     }
 
     /// Returns the total number of problems in the suite.
@@ -141,6 +163,9 @@ impl Drop for Suite {
 /// Instances can be optained using [Suite::next_problem].
 pub struct Problem {
     inner: *mut coco_problem_t,
+    function: usize,
+    instance: usize,
+    dimension: usize,
 }
 
 unsafe impl Send for Problem {}
@@ -159,6 +184,30 @@ impl Problem {
                 .to_str()
                 .unwrap()
         }
+    }
+
+    /// Returns the name of the problem.
+    pub fn name(&self) -> &str {
+        unsafe {
+            CStr::from_ptr(coco_sys::coco_problem_get_name(self.inner))
+                .to_str()
+                .unwrap()
+        }
+    }
+
+    /// Returns the number of the problem.
+    pub fn function(&self) -> usize {
+        self.function
+    }
+
+    /// Returns the dimension of the problem.
+    pub fn dimension(&self) -> usize {
+        self.dimension
+    }
+
+    /// Returns the instance of the problem.
+    pub fn instance(&self) -> usize {
+        self.instance
     }
 
     /// Evaluates the problem at `x` and returns the result in `y`.
@@ -190,15 +239,6 @@ impl Problem {
     /// Returns true if a previous evaluation hit the target value.
     pub fn final_target_hit(&self) -> bool {
         unsafe { coco_sys::coco_problem_final_target_hit(self.inner) == 1 }
-    }
-
-    /// Returns the dimension of the problem.
-    pub fn dimension(&self) -> usize {
-        unsafe {
-            coco_sys::coco_problem_get_dimension(self.inner)
-                .try_into()
-                .unwrap()
-        }
     }
 
     /// Returns the number of objectives of the problem.
