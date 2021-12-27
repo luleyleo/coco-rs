@@ -8,6 +8,7 @@ fn main() {
 fn generate_bindings() {
     // Tell cargo to invalidate the built crate whenever the wrapper changes
     println!("cargo:rerun-if-changed=wrapper.h");
+    println!("cargo:rerun-if-changed=wrapper.c");
 
     // These would be generated multiple times
     let ignored_macros = IgnoreMacros(
