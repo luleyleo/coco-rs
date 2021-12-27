@@ -1,4 +1,3 @@
-
 #include "vendor/coco-prebuilt/coco.h"
 
 /** Makes the problem returned by coco_suite_get_next_problem owned **/

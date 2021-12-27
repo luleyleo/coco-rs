@@ -12,5 +12,4 @@ edition = "2021"
 links = "coco"
 
 [build-dependencies]
-bindgen = "0.59.2"
 cc = "1.0"

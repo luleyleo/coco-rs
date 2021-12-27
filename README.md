@@ -7,6 +7,22 @@ Rust bindings for the COCO Numerical Black-Box Optimization Benchmarking Framewo
 
 See https://github.com/numbbo/coco and https://numbbo.github.io/coco/.
 
-# Building coco-sys
+## Building coco-sys
 
-The COCO build process is a bit complicated and requires running `prebuild-coco.sh`. The resulting files are alread stored in Git in the `vendor/coco-prebuilt` folder. If COCO needs an update, this script must be run again, and the resulting files must be checked into Git. If there is no change in the COCO code base, a simple `cargo build` is enough.
+This is only necessary when updating COCO. A regular build only requires compilers for Rust and C as well as a call to `cargo build`.
+
+### Requirements
+
+- `git`
+- `gcc` (or any other C compiler)
+- `bindgen` (`cargo install bindgen`)
+- `bash` (for `generate.sh`)
+
+### Build Steps
+
+```sh
+$ git submodule update --init --recursive
+$ cd coco-sys
+$ ./generate.sh
+$ cargo build
+```
