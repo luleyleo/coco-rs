@@ -158,6 +158,14 @@ impl Drop for Suite {
     }
 }
 
+impl Iterator for Suite {
+    type Item = Problem;
+
+    fn next(&mut self) -> Option<Self::Item> {
+        self.next_problem(None)
+    }
+}
+
 /// A specific problem instance.
 ///
 /// Instances can be optained using [Suite::next_problem].
