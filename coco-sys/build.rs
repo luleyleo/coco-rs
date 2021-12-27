@@ -9,6 +9,7 @@ fn generate_bindings() {
     // Tell cargo to invalidate the built crate whenever the wrapper changes
     println!("cargo:rerun-if-changed=wrapper.h");
 
+    // These would be generated multiple times
     let ignored_macros = IgnoreMacros(
         [
             "FP_INFINITE",
@@ -48,6 +49,8 @@ fn generate_bindings() {
 fn compile_and_link_coco() {
     cc::Build::new()
         .file("vendor/coco-prebuilt/coco.c")
+        .file("wrapper.c")
+        .warnings(false)
         .compile("coco");
 }
 
