@@ -40,6 +40,8 @@ pub struct Suite {
     inner: *mut coco_suite_t,
 }
 
+unsafe impl Send for Suite {}
+
 pub enum SuiteName {
     Bbob,
     BbobBiobj,
@@ -140,6 +142,8 @@ impl Drop for Suite {
 pub struct Problem {
     inner: *mut coco_problem_t,
 }
+
+unsafe impl Send for Problem {}
 
 impl Problem {
     /// Evaluates the problem at `x` and returns the result in `y`.
