@@ -146,6 +146,14 @@ pub struct Problem {
 unsafe impl Send for Problem {}
 
 impl Problem {
+    pub fn id(&self) -> &str {
+        unsafe {
+            CStr::from_ptr(coco_sys::coco_problem_get_id(self.inner))
+                .to_str()
+                .unwrap()
+        }
+    }
+
     /// Evaluates the problem at `x` and returns the result in `y`.
     ///
     /// The length of `x` must match [Problem::dimension] and the
