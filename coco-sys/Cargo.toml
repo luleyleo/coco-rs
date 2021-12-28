@@ -1,6 +1,6 @@
 [package]
 name = "coco-sys"
-version = "0.2.0"
+version = "0.3.0"
 license = "MIT"
 authors = ["Leopold Luley"]
 description = "Generated Rust bindings for COCO benchmarking framework"
