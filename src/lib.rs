@@ -203,18 +203,18 @@ impl Problem {
         }
     }
 
-    /// Returns the number of the problem.
-    pub fn function(&self) -> usize {
+    /// Returns the index of the problem.
+    pub fn function_index(&self) -> usize {
         self.function
     }
 
-    /// Returns the dimension of the problem.
-    pub fn dimension(&self) -> usize {
+    /// Returns the dimension index of the problem.
+    pub fn dimension_index(&self) -> usize {
         self.dimension
     }
 
     /// Returns the instance of the problem.
-    pub fn instance(&self) -> usize {
+    pub fn instance_index(&self) -> usize {
         self.instance
     }
 
@@ -247,6 +247,15 @@ impl Problem {
     /// Returns true if a previous evaluation hit the target value.
     pub fn final_target_hit(&self) -> bool {
         unsafe { coco_sys::coco_problem_final_target_hit(self.inner) == 1 }
+    }
+
+    /// Returns the dimension of the problem.
+    pub fn dimension(&self) -> usize {
+        unsafe {
+            coco_sys::coco_problem_get_dimension(self.inner)
+                .try_into()
+                .unwrap()
+        }
     }
 
     /// Returns the number of objectives of the problem.
