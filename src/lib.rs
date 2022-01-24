@@ -306,12 +306,20 @@ impl Problem {
 
     /// Returns how often this instance has been evaluated.
     pub fn evaluations(&self) -> u64 {
-        unsafe { coco_sys::coco_problem_get_evaluations(self.inner) }
+        unsafe {
+            coco_sys::coco_problem_get_evaluations(self.inner)
+                .try_into()
+                .unwrap()
+        }
     }
 
     /// Returns how often this instances constrants have been evaluated.
     pub fn evaluations_constraints(&self) -> u64 {
-        unsafe { coco_sys::coco_problem_get_evaluations_constraints(self.inner) }
+        unsafe {
+            coco_sys::coco_problem_get_evaluations_constraints(self.inner)
+                .try_into()
+                .unwrap()
+        }
     }
 
     /// Writes a feasible initial solution into `x`.
