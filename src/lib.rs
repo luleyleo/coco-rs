@@ -295,18 +295,17 @@ impl Problem {
             let smallest = coco_sys::coco_problem_get_smallest_values_of_interest(self.inner);
             let largest = coco_sys::coco_problem_get_largest_values_of_interest(self.inner);
 
-            let ranges = (0..dimension)
+            (0..dimension)
                 .into_iter()
                 .map(|i| (*smallest.offset(i))..=(*largest.offset(i)))
-                .collect();
-
-            ranges
+                .collect()
         }
     }
 
     /// Returns how often this instance has been evaluated.
     pub fn evaluations(&self) -> u64 {
         unsafe {
+            #[allow(clippy::useless_conversion)]
             coco_sys::coco_problem_get_evaluations(self.inner)
                 .try_into()
                 .unwrap()
@@ -316,6 +315,7 @@ impl Problem {
     /// Returns how often this instances constrants have been evaluated.
     pub fn evaluations_constraints(&self) -> u64 {
         unsafe {
+            #[allow(clippy::useless_conversion)]
             coco_sys::coco_problem_get_evaluations_constraints(self.inner)
                 .try_into()
                 .unwrap()

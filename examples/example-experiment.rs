@@ -39,7 +39,7 @@ fn example_experiment(
             let evaluations_remaining =
                 (dimension * BUDGET_MULTIPLIER).saturating_sub(evaluations_done as usize);
 
-            if problem.final_target_hit() || evaluations_remaining <= 0 {
+            if problem.final_target_hit() || evaluations_remaining == 0 {
                 break;
             }
 
