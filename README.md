@@ -1,3 +1,7 @@
+# Archiving Notice
+
+This repository has been archived, as the Rust bindings have been merged into the official repository and can be found there: https://github.com/numbbo/coco/tree/master/code-experiments/build/rust
+
 # Coco
 
 [![Crates.io](https://img.shields.io/crates/v/coco-rs)](https://crates.io/crates/coco-rs)
